@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/itchyny/gojq"
 )
 
 func main() {
@@ -30,18 +33,30 @@ func main() {
 		panic(err)
 	}
 
+	ti := textinput.New()
+	ti.Placeholder = "."
+	ti.Focus()
+	m.input = ti
+
+	query, err := gojq.Parse(ti.Placeholder)
+	if err != nil {
+		panic(err)
+	}
+	m.query = query
+
 	if _, err := tea.NewProgram(m).Run(); err != nil {
 		panic(err)
 	}
 }
 
 type model struct {
-	data interface{}
+	data  interface{}
+	input textinput.Model
+	query *gojq.Query
 }
 
 func (m model) Init() tea.Cmd {
-	// no I/O for now
-	return nil
+	return textinput.Blink
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -52,14 +67,37 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	return m, nil
+	var cmd tea.Cmd
+	m.input, cmd = m.input.Update(msg)
+
+	query, _ := gojq.Parse(m.input.Value()) // TODO: error handling
+	if query != nil {
+		m.query = query
+	}
+
+	return m, cmd
 }
 
 func (m model) View() string {
-	b, err := json.MarshalIndent(m.data, "", "\t")
-	if err != nil {
-		panic(err)
+	var pieces []string
+
+	iter := m.query.Run(m.data)
+	for {
+		v, ok := iter.Next()
+		if !ok {
+			break
+		}
+		if err, ok := v.(error); ok {
+			panic(err)
+		}
+
+		b, err := json.MarshalIndent(v, "", "  ")
+		if err != nil {
+			panic(err)
+		}
+
+		pieces = append(pieces, string(b))
 	}
 
-	return fmt.Sprintf("%s\npress ctrl+c to quit", string(b))
+	return fmt.Sprintf("%v\n\n%s\n\npress ctrl+c to quit", strings.Join(pieces, "\n"), m.input.View())
 }
