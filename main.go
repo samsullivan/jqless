@@ -82,46 +82,50 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	if input != m.lastQuery {
-		m.lastQuery = input
-
-		// reset last error before trying again
-		// intentionally leaving last successful state, in case this attempt fails
-		m.lastError = nil
-
-		query, err := gojq.Parse(input)
-		if err != nil {
-			m.lastError = err
-		} else {
-			var result []string
-
-			iter := query.Run(m.data)
-			for {
-				v, ok := iter.Next()
-				if !ok {
-					break
-				}
-				if err, ok := v.(error); ok {
-					// TODO: handle more than one error
-					m.lastError = err
-					break
-				}
-
-				b, err := json.MarshalIndent(v, "", "  ")
-				if err != nil {
-					m.lastError = err
-					break
-				}
-
-				result = append(result, string(b))
-			}
-
-			if m.lastError == nil {
-				m.lastSuccessfulResult = result
-			}
-		}
+		go m.parseQuery(input)
 	}
 
 	return m, cmd
+}
+
+func (m model) parseQuery(input string) {
+	m.lastQuery = input
+
+	// reset last error before trying again
+	// intentionally leaving last successful state, in case this attempt fails
+	m.lastError = nil
+
+	query, err := gojq.Parse(input)
+	if err != nil {
+		m.lastError = err
+	} else {
+		var result []string
+
+		iter := query.Run(m.data)
+		for {
+			v, ok := iter.Next()
+			if !ok {
+				break
+			}
+			if err, ok := v.(error); ok {
+				// TODO: handle more than one error
+				m.lastError = err
+				break
+			}
+
+			b, err := json.MarshalIndent(v, "", "  ")
+			if err != nil {
+				m.lastError = err
+				break
+			}
+
+			result = append(result, string(b))
+		}
+
+		if m.lastError == nil {
+			m.lastSuccessfulResult = result
+		}
+	}
 }
 
 func (m model) View() string {
