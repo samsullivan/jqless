@@ -38,12 +38,6 @@ func main() {
 	ti.Focus()
 	m.input = ti
 
-	query, err := gojq.Parse(ti.Placeholder)
-	if err != nil {
-		panic(err)
-	}
-	m.query = query
-
 	if _, err := tea.NewProgram(m).Run(); err != nil {
 		panic(err)
 	}
@@ -52,7 +46,10 @@ func main() {
 type model struct {
 	data  interface{}
 	input textinput.Model
-	query *gojq.Query
+
+	lastError            error
+	lastQuery            string
+	lastSuccessfulResult []string
 }
 
 func (m model) Init() tea.Cmd {
@@ -70,34 +67,64 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	m.input, cmd = m.input.Update(msg)
 
-	query, _ := gojq.Parse(m.input.Value()) // TODO: error handling
-	if query != nil {
-		m.query = query
+	input := strings.TrimSpace(m.input.Value())
+	if input == "" {
+		input = m.input.Placeholder
+	}
+
+	if input != m.lastQuery {
+		m.lastQuery = input
+
+		// reset last error before trying again
+		// intentionally leaving last successful state, in case this attempt fails
+		m.lastError = nil
+
+		query, err := gojq.Parse(input)
+		if err != nil {
+			m.lastError = err
+		} else {
+			var result []string
+
+			iter := query.Run(m.data)
+			for {
+				v, ok := iter.Next()
+				if !ok {
+					break
+				}
+				if err, ok := v.(error); ok {
+					// TODO: handle more than one error
+					m.lastError = err
+					break
+				}
+
+				b, err := json.MarshalIndent(v, "", "  ")
+				if err != nil {
+					m.lastError = err
+					break
+				}
+
+				result = append(result, string(b))
+			}
+
+			if m.lastError == nil {
+				m.lastSuccessfulResult = result
+			}
+		}
 	}
 
 	return m, cmd
 }
 
 func (m model) View() string {
-	var pieces []string
+	output := make([]string, 0, 4)
 
-	iter := m.query.Run(m.data)
-	for {
-		v, ok := iter.Next()
-		if !ok {
-			break
-		}
-		if err, ok := v.(error); ok {
-			panic(err)
-		}
-
-		b, err := json.MarshalIndent(v, "", "  ")
-		if err != nil {
-			panic(err)
-		}
-
-		pieces = append(pieces, string(b))
+	output = append(output, strings.Join(m.lastSuccessfulResult, "\n"))
+	if m.lastError != nil {
+		output = append(output, fmt.Sprintf("error: %s", m.lastError))
 	}
 
-	return fmt.Sprintf("%v\n\n%s\n\npress ctrl+c to quit", strings.Join(pieces, "\n"), m.input.View())
+	output = append(output, m.input.View())
+	output = append(output, "press ctrl+c to quit")
+
+	return strings.Join(output, "\n\n")
 }
