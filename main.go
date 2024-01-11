@@ -13,22 +13,31 @@ import (
 )
 
 func main() {
-	stat, err := os.Stdin.Stat()
-	if err != nil {
-		panic(err)
-	}
+	var b []byte
+	if len(os.Args) > 1 {
+		var err error
+		b, err = os.ReadFile(os.Args[1])
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		stat, err := os.Stdin.Stat()
+		if err != nil {
+			panic(err)
+		}
 
-	if stat.Mode()&os.ModeNamedPipe == 0 && stat.Size() == 0 {
-		panic("jqless expects piped data")
-	}
+		if stat.Mode()&os.ModeNamedPipe == 0 && stat.Size() == 0 {
+			panic("jqless expects piped data if filename not included as an argument")
+		}
 
-	b, err := io.ReadAll(os.Stdin)
-	if err != nil {
-		panic(err)
+		b, err = io.ReadAll(os.Stdin)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	var m model
-	err = json.Unmarshal(b, &m.data)
+	err := json.Unmarshal(b, &m.data)
 	if err != nil {
 		panic(err)
 	}
