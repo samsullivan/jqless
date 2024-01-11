@@ -3,13 +3,19 @@ package model
 import (
 	"encoding/json"
 
+	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
 )
 
 type model struct {
-	data  interface{}
-	input textinput.Model
+	// data is unmarshalled JSON user input
+	data interface{}
 
+	// bubbletea components
+	input   textinput.Model
+	loading spinner.Model
+
+	// state of jq querying
 	lastError            error
 	lastQuery            string
 	lastSuccessfulResult []string
@@ -29,6 +35,10 @@ func New(input []byte) (*model, error) {
 	ti.Placeholder = "."
 	ti.Focus()
 	m.input = ti
+
+	// configure loading spinner
+	spin := spinner.New()
+	m.loading = spin
 
 	return &m, nil
 }

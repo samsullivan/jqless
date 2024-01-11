@@ -1,10 +1,7 @@
 package model
 
-import (
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
-)
+import tea "github.com/charmbracelet/bubbletea"
 
 func (m model) Init() tea.Cmd {
-	return textinput.Blink
+	return m.loading.Tick
 }

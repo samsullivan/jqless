@@ -13,6 +13,7 @@ func (m model) View() string {
 		output = append(output, fmt.Sprintf("error: %s", m.lastError))
 	}
 
+	output = append(output, m.loading.View())
 	output = append(output, m.input.View())
 	output = append(output, "press ctrl+c to quit")
 

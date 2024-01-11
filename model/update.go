@@ -1,6 +1,7 @@
 package model
 
 import (
+	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 
 	"github.com/samsullivan/jqless/jq"
@@ -16,6 +17,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyCtrlC, tea.KeyEscape, tea.KeyEnter:
 			return m, tea.Quit
 		}
+	// listen for loading spinner
+	case spinner.TickMsg:
+		var cmd tea.Cmd
+		m.loading, cmd = m.loading.Update(msg)
+		return m, cmd
 	// listen for updated jq results
 	case jq.ParseQueryResult:
 		if msg.Err != nil {
