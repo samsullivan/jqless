@@ -2,6 +2,8 @@ module github.com/samsullivan/jqless
 
 go 1.21.5
 
+replace github.com/itchyny/gojq v0.12.14 => github.com/samsullivan/gojq v0.0.0-20240111033603-52965f398a2e
+
 require (
 	github.com/charmbracelet/bubbles v0.17.1
 	github.com/charmbracelet/bubbletea v0.25.0

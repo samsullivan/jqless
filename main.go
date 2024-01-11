@@ -42,6 +42,9 @@ func main() {
 		panic(err)
 	}
 
+	// prepare input JSON for concurrent gojq execution while querying
+	m.data = gojq.PrepareData(m.data)
+
 	ti := textinput.New()
 	ti.Placeholder = "."
 	ti.Focus()
@@ -53,7 +56,7 @@ func main() {
 }
 
 type model struct {
-	data  interface{}
+	data  gojq.PreparedData
 	input textinput.Model
 
 	lastError            error
@@ -101,7 +104,7 @@ func (m model) parseQuery(input string) {
 	} else {
 		var result []string
 
-		iter := query.Run(m.data)
+		iter := query.ConcurrentRun(m.data)
 		for {
 			v, ok := iter.Next()
 			if !ok {
