@@ -4,11 +4,10 @@ import (
 	"encoding/json"
 
 	"github.com/charmbracelet/bubbles/textinput"
-	"github.com/itchyny/gojq"
 )
 
 type model struct {
-	data  gojq.PreparedData
+	data  interface{}
 	input textinput.Model
 
 	lastError            error
@@ -24,9 +23,6 @@ func New(input []byte) (*model, error) {
 	if err != nil {
 		panic(err)
 	}
-
-	// prepare input JSON for concurrent gojq execution while querying
-	m.data = gojq.PrepareData(m.data)
 
 	// configure text input
 	ti := textinput.New()

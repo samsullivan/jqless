@@ -11,9 +11,9 @@ type ParseQueryResult struct {
 	Err    error
 }
 
-// ParseQuery takes JSON data (prepared by gojq) and an input query.
+// ParseQuery takes unmarshalled JSON data and an input query.
 // On success, returns a slice of strings from gojq result.
-func ParseQuery(data gojq.PreparedData, input string) ParseQueryResult {
+func ParseQuery(data interface{}, input string) ParseQueryResult {
 	query, err := gojq.Parse(input)
 	if err != nil {
 		return ParseQueryResult{
@@ -23,7 +23,7 @@ func ParseQuery(data gojq.PreparedData, input string) ParseQueryResult {
 
 	var result []string
 
-	iter := query.ConcurrentRun(data)
+	iter := query.Run(data)
 	for {
 		v, ok := iter.Next()
 		if !ok {
