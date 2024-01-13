@@ -1,6 +1,6 @@
 module github.com/samsullivan/jqless
 
-go 1.21.5
+go 1.19
 
 replace github.com/itchyny/gojq v0.12.14 => github.com/samsullivan/gojq v0.0.0-20240111033603-52965f398a2e
 
