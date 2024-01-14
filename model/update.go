@@ -25,7 +25,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// listen for errors
 	case message.FatalError:
 		// TODO: better error output
-		fmt.Printf("FatalError: %s\n\nexiting...\n\n", msg.Error())
+		fmt.Printf("FatalError: %s\n\n", msg.Error())
 
 		cmd = tea.Quit
 		return m, cmd

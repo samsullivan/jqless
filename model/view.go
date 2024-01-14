@@ -24,7 +24,7 @@ var (
 )
 
 func (m model) View() string {
-	if !m.viewportReady {
+	if !m.viewportReady || m.data == nil {
 		return ""
 	}
 
