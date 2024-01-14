@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/itchyny/gojq"
+
 	"github.com/samsullivan/jqless/message"
 )
 
