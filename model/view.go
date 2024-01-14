@@ -23,8 +23,8 @@ var (
 )
 
 func (m model) View() string {
-	if !m.ready {
-		return "\n  Initializing..."
+	if !m.viewportReady {
+		return ""
 	}
 	return fmt.Sprintf("%s\n%s\n%s", m.headerView(), m.viewport.View(), m.footerView())
 }

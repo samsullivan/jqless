@@ -16,7 +16,7 @@ import (
 )
 
 type model struct {
-	ready bool
+	viewportReady bool
 
 	// related to JSON user input
 	file *os.File

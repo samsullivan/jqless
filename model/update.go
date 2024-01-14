@@ -15,7 +15,9 @@ import (
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var (
-		cmd  tea.Cmd
+		// some messages need to return a single command immediately
+		cmd tea.Cmd
+		// if not, append to list of cmds to be returned as a batch at the end
 		cmds []tea.Cmd
 	)
 
@@ -39,17 +41,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case spinner.TickMsg:
 		if !m.isLoading {
 			// stop spinner if no longer loading
-			return m, nil
+			return m, cmd
 		}
 		m.spinner, cmd = m.spinner.Update(msg)
 		return m, cmd
 	// listen for window resizing
 	case tea.WindowSizeMsg:
+		// see https://github.com/charmbracelet/bubbletea/blob/master/examples/pager/main.go
 		headerHeight := lipgloss.Height(m.headerView())
 		footerHeight := lipgloss.Height(m.footerView())
 		verticalMarginHeight := headerHeight + footerHeight
 
-		if !m.ready {
+		if !m.viewportReady {
 			// Since this program is using the full size of the viewport we
 			// need to wait until we've received the window dimensions before
 			// we can initialize the viewport. The initial dimensions come in
@@ -59,7 +62,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.viewport.YPosition = headerHeight
 			m.viewport.SetContent(m.viewportContents())
 
-			m.ready = true
+			m.viewportReady = true
 		} else {
 			m.viewport.Width = msg.Width
 			m.viewport.Height = msg.Height - verticalMarginHeight
