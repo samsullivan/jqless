@@ -27,7 +27,12 @@ func (m model) View() string {
 	if !m.viewportReady {
 		return ""
 	}
-	return fmt.Sprintf("%s\n%s\n%s", m.headerView(), m.viewport.View(), m.footerView())
+
+	return strings.Join([]string{
+		m.headerView(),
+		m.viewport.View(),
+		m.footerView(),
+	}, "\n")
 }
 
 func (m model) headerView() string {
