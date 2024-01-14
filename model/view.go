@@ -36,13 +36,18 @@ func (m model) View() string {
 }
 
 func (m model) headerView() string {
+	var borderColor lipgloss.TerminalColor = lipgloss.NoColor{}
+	if m.lastError != nil {
+		borderColor = lipgloss.Color("#CF2222")
+	}
+	titleStyle.BorderForeground(borderColor)
+
 	title := titleStyle.Render(m.textinput.View())
 	line := strings.Repeat("─", util.Max(0, m.viewport.Width-lipgloss.Width(title)))
 	return lipgloss.JoinHorizontal(lipgloss.Center, title, line)
 }
 
 func (m model) viewportContents() string {
-	// TODO: lastError
 	return strings.Join(m.lastResults, "\n")
 }
 
