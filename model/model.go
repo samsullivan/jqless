@@ -8,6 +8,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 
 	"github.com/samsullivan/jqless/jq"
@@ -15,11 +16,14 @@ import (
 )
 
 type model struct {
+	ready bool
+
 	// related to JSON user input
 	file *os.File
 	data interface{}
 
 	// bubbletea components
+	viewport  viewport.Model
 	textinput textinput.Model
 	spinner   spinner.Model
 
