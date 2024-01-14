@@ -22,6 +22,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	// listen for spinner tick
 	case spinner.TickMsg:
+		if !m.isLoading {
+			// stop spinner if no longer loading
+			break
+		}
 		m.spinner, cmd = m.spinner.Update(msg)
 		return m, cmd
 	// listen for updated jq results
@@ -44,9 +48,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.lastQuery = query
 		m.isLoading = true
 
-		return m, func() tea.Msg {
-			return jq.ParseQuery(m.data, query)
-		}
+		// restart spinner in addition to triggering jq
+		return m, tea.Batch(
+			m.spinner.Tick,
+			func() tea.Msg {
+				return jq.ParseQuery(m.data, query)
+			},
+		)
 	}
 
 	return m, cmd
