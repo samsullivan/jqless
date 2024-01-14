@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io"
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -9,41 +8,42 @@ import (
 	"github.com/samsullivan/jqless/model"
 )
 
+// main starts the bubbletea program
 func main() {
-	var b []byte
+	file, err := getFile()
+	if err != nil {
+		panic(err)
+	}
 
+	m, err := model.New(file)
+	if err != nil {
+		panic(err)
+	}
+
+	if _, err := tea.NewProgram(m).Run(); err != nil {
+		panic(err)
+	}
+}
+
+// getFile returns a file descriptor, expected to contain JSON data.
+func getFile() (file *os.File, err error) {
 	if len(os.Args) > 1 {
 		// if command line arguments included, attempt to open local file
-		var err error
-		b, err = os.ReadFile(os.Args[1])
+		file, err = os.Open(os.Args[1])
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 	} else {
 		// otherwise, piped data is expected
 		stat, err := os.Stdin.Stat()
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 
-		if stat.Mode()&os.ModeNamedPipe == 0 && stat.Size() == 0 {
-			panic("jqless expects piped data if filename not included as an argument")
-		}
-
-		b, err = io.ReadAll(os.Stdin)
-		if err != nil {
-			panic(err)
+		if stat.Mode()&os.ModeNamedPipe != 0 && stat.Size() != 0 {
+			file = os.Stdin
 		}
 	}
 
-	// create new model with input JSON
-	m, err := model.New(b)
-	if err != nil {
-		panic(err)
-	}
-
-	// start bubbletea program
-	if _, err := tea.NewProgram(m).Run(); err != nil {
-		panic(err)
-	}
+	return file, nil
 }

@@ -6,5 +6,9 @@ import (
 )
 
 func (m model) Init() tea.Cmd {
-	return textinput.Blink
+	return tea.Batch(
+		m.spinner.Tick,
+		textinput.Blink,
+		m.parseFile(),
+	)
 }

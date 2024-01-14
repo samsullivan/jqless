@@ -1,23 +1,49 @@
 package model
 
 import (
+	"fmt"
+
+	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 
 	"github.com/samsullivan/jqless/jq"
+	"github.com/samsullivan/jqless/message"
 	"github.com/samsullivan/jqless/util"
 )
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+
 	switch msg := msg.(type) {
+	// listen for errors
+	case message.FatalError:
+		// TODO: better error output
+		fmt.Printf("FatalError: %s\n\nexiting...\n\n", msg.Error())
+
+		cmd = tea.Quit
+		return m, cmd
 	// listen to keypresses
 	case tea.KeyMsg:
 		switch msg.Type {
 		// exit keys
 		case tea.KeyCtrlC, tea.KeyEscape, tea.KeyEnter:
-			return m, tea.Quit
+			cmd = tea.Quit
+			return m, cmd
 		}
+	// listen for spinner tick
+	case spinner.TickMsg:
+		if !m.isLoading {
+			// stop spinner if no longer loading
+			break
+		}
+		m.spinner, cmd = m.spinner.Update(msg)
+		return m, cmd
+	// listen for parsed JSON file
+	case message.ParsedFile:
+		m.data = msg.Data()
 	// listen for updated jq results
 	case jq.ParseQueryResult:
+		m.isLoading = false
 		if msg.Err != nil {
 			m.lastError = msg.Err
 		} else {
@@ -27,17 +53,27 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	// handle text input changes
-	var cmd tea.Cmd
-	m.input, cmd = m.input.Update(msg)
+	m.textinput, cmd = m.textinput.Update(msg)
 
-	// if text input changed, trigger new parsing of jq
-	input := util.SanitizeQuery(m.input.Value(), m.input.Placeholder)
-	if input != m.lastQuery {
-		m.lastQuery = input
+	// skip jq-related processing if file not processed into data yet
+	if m.data == nil {
+		// TODO: timeout
+		return m, cmd
+	}
 
-		return m, func() tea.Msg {
-			return jq.ParseQuery(m.data, input)
-		}
+	// if query changed, trigger new parsing of jq
+	query := util.SanitizeQuery(m.textinput.Value(), m.textinput.Placeholder)
+	if query != m.lastQuery {
+		m.lastQuery = query
+		m.isLoading = true
+
+		// restart spinner in addition to triggering jq
+		return m, tea.Batch(
+			m.spinner.Tick,
+			func() tea.Msg {
+				return jq.ParseQuery(m.data, query)
+			},
+		)
 	}
 
 	return m, cmd

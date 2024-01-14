@@ -6,6 +6,8 @@ import (
 	"github.com/itchyny/gojq"
 )
 
+const DefaultQuery = "."
+
 type ParseQueryResult struct {
 	Result []string
 	Err    error

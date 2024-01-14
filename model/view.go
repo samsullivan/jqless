@@ -13,7 +13,8 @@ func (m model) View() string {
 		output = append(output, fmt.Sprintf("error: %s", m.lastError))
 	}
 
-	output = append(output, m.input.View())
+	output = append(output, m.spinner.View())
+	output = append(output, m.textinput.View())
 	output = append(output, "press ctrl+c to quit")
 
 	return strings.Join(output, "\n\n")
