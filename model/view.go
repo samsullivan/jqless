@@ -30,28 +30,18 @@ func (m model) View() string {
 }
 
 func (m model) headerView() string {
-	title := titleStyle.Render("Mr. Pager")
+	title := titleStyle.Render(m.textinput.View())
 	line := strings.Repeat("─", util.Max(0, m.viewport.Width-lipgloss.Width(title)))
 	return lipgloss.JoinHorizontal(lipgloss.Center, title, line)
 }
 
 func (m model) viewportContents() string {
-	output := make([]string, 0, 4)
-
-	output = append(output, strings.Join(m.lastResults, "\n"))
-	if m.lastError != nil {
-		output = append(output, fmt.Sprintf("error: %s", m.lastError))
-	}
-
-	output = append(output, m.spinner.View())
-	output = append(output, m.textinput.View())
-	output = append(output, "press ctrl+c to quit")
-
-	return strings.Join(output, "\n\n")
+	// TODO: lastError
+	return strings.Join(m.lastResults, "\n")
 }
 
 func (m model) footerView() string {
-	info := infoStyle.Render(fmt.Sprintf("%3.f%%", m.viewport.ScrollPercent()*100))
+	info := infoStyle.Render(fmt.Sprintf("%s %3.f%%", m.spinner.View(), m.viewport.ScrollPercent()*100))
 	line := strings.Repeat("─", util.Max(0, m.viewport.Width-lipgloss.Width(info)))
 	return lipgloss.JoinHorizontal(lipgloss.Center, line, info)
 }
