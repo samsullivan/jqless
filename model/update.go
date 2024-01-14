@@ -9,17 +9,19 @@ import (
 )
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+
 	switch msg := msg.(type) {
 	// listen to keypresses
 	case tea.KeyMsg:
 		switch msg.Type {
 		// exit keys
 		case tea.KeyCtrlC, tea.KeyEscape, tea.KeyEnter:
-			return m, tea.Quit
+			cmd = tea.Quit
+			return m, cmd
 		}
 	// listen for loading spinner
 	case spinner.TickMsg:
-		var cmd tea.Cmd
 		m.loading, cmd = m.loading.Update(msg)
 		return m, cmd
 	// listen for updated jq results
@@ -33,16 +35,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	// handle text input changes
-	var cmd tea.Cmd
 	m.input, cmd = m.input.Update(msg)
+	query := util.SanitizeQuery(m.input.Value(), m.input.Placeholder)
 
-	// if text input changed, trigger new parsing of jq
-	input := util.SanitizeQuery(m.input.Value(), m.input.Placeholder)
-	if input != m.lastQuery {
-		m.lastQuery = input
+	// if query changed, trigger new parsing of jq
+	if query != m.lastQuery {
+		m.lastQuery = query
 
 		return m, func() tea.Msg {
-			return jq.ParseQuery(m.data, input)
+			return jq.ParseQuery(m.data, query)
 		}
 	}
 

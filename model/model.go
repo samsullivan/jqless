@@ -5,6 +5,8 @@ import (
 
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
+
+	"github.com/samsullivan/jqless/jq"
 )
 
 type model struct {
@@ -32,7 +34,7 @@ func New(input []byte) (*model, error) {
 
 	// configure text input
 	ti := textinput.New()
-	ti.Placeholder = "."
+	ti.Placeholder = jq.DefaultQuery
 	ti.Focus()
 	m.input = ti
 
