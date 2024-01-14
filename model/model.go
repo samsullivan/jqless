@@ -47,6 +47,7 @@ func New(file *os.File) (*model, error) {
 	return &m, nil
 }
 
+// parseFile returns a command for reading the input file into unmarshalled JSON data
 func (m *model) parseFile() tea.Cmd {
 	return func() tea.Msg {
 		var data interface{}
