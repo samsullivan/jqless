@@ -14,15 +14,17 @@ type model struct {
 	data interface{}
 
 	// bubbletea components
-	input   textinput.Model
-	loading spinner.Model
+	textinput textinput.Model
+	spinner   spinner.Model
 
 	// state of jq querying
+	isLoading            bool
 	lastError            error
 	lastQuery            string
 	lastSuccessfulResult []string
 }
 
+// New takes input JSON as a byte slice and returns a model for use by bubbletea.
 func New(input []byte) (*model, error) {
 	var m model
 
@@ -36,11 +38,11 @@ func New(input []byte) (*model, error) {
 	ti := textinput.New()
 	ti.Placeholder = jq.DefaultQuery
 	ti.Focus()
-	m.input = ti
+	m.textinput = ti
 
 	// configure loading spinner
 	spin := spinner.New()
-	m.loading = spin
+	m.spinner = spin
 
 	return &m, nil
 }

@@ -20,12 +20,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmd = tea.Quit
 			return m, cmd
 		}
-	// listen for loading spinner
+	// listen for spinner tick
 	case spinner.TickMsg:
-		m.loading, cmd = m.loading.Update(msg)
+		m.spinner, cmd = m.spinner.Update(msg)
 		return m, cmd
 	// listen for updated jq results
 	case jq.ParseQueryResult:
+		m.isLoading = false
 		if msg.Err != nil {
 			m.lastError = msg.Err
 		} else {
@@ -35,12 +36,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	// handle text input changes
-	m.input, cmd = m.input.Update(msg)
-	query := util.SanitizeQuery(m.input.Value(), m.input.Placeholder)
+	m.textinput, cmd = m.textinput.Update(msg)
+	query := util.SanitizeQuery(m.textinput.Value(), m.textinput.Placeholder)
 
 	// if query changed, trigger new parsing of jq
 	if query != m.lastQuery {
 		m.lastQuery = query
+		m.isLoading = true
 
 		return m, func() tea.Msg {
 			return jq.ParseQuery(m.data, query)
