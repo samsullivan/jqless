@@ -8,6 +8,6 @@ func NewFatalError(err error) FatalError {
 	return FatalError{err: err}
 }
 
-func (msg FatalError) Error() string {
-	return msg.err.Error()
+func (msg FatalError) Error() error {
+	return msg.err
 }

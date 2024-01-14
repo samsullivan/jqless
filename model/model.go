@@ -24,10 +24,10 @@ type model struct {
 	spinner   spinner.Model
 
 	// state of jq querying
-	isLoading            bool
-	lastError            error
-	lastQuery            string
-	lastSuccessfulResult []string
+	isLoading   bool
+	lastError   error
+	lastQuery   string
+	lastResults []string
 }
 
 // New takes an open file and returns a model for use by bubbletea.

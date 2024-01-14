@@ -42,13 +42,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case message.ParsedFile:
 		m.data = msg.Data()
 	// listen for updated jq results
-	case jq.ParseQueryResult:
+	case message.QueryResult:
 		m.isLoading = false
-		if msg.Err != nil {
-			m.lastError = msg.Err
+		if msg.Failed() {
+			m.lastError = msg.Error()
 		} else {
 			m.lastError = nil
-			m.lastSuccessfulResult = msg.Result
+			m.lastResults = msg.Results()
 		}
 	}
 
@@ -71,7 +71,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tea.Batch(
 			m.spinner.Tick,
 			func() tea.Msg {
-				return jq.ParseQuery(m.data, query)
+				return jq.Query(m.data, query)
 			},
 		)
 	}

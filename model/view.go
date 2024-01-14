@@ -8,7 +8,7 @@ import (
 func (m model) View() string {
 	output := make([]string, 0, 4)
 
-	output = append(output, strings.Join(m.lastSuccessfulResult, "\n"))
+	output = append(output, strings.Join(m.lastResults, "\n"))
 	if m.lastError != nil {
 		output = append(output, fmt.Sprintf("error: %s", m.lastError))
 	}

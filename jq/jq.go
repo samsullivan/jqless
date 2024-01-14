@@ -4,23 +4,17 @@ import (
 	"encoding/json"
 
 	"github.com/itchyny/gojq"
+	"github.com/samsullivan/jqless/message"
 )
 
 const DefaultQuery = "."
 
-type ParseQueryResult struct {
-	Result []string
-	Err    error
-}
-
-// ParseQuery takes unmarshalled JSON data and an input query.
+// Query takes unmarshalled JSON data and an input query.
 // On success, returns a slice of strings from gojq result.
-func ParseQuery(data interface{}, input string) ParseQueryResult {
+func Query(data interface{}, input string) message.QueryResult {
 	query, err := gojq.Parse(input)
 	if err != nil {
-		return ParseQueryResult{
-			Err: err,
-		}
+		return message.NewQueryError(err)
 	}
 
 	var result []string
@@ -33,22 +27,16 @@ func ParseQuery(data interface{}, input string) ParseQueryResult {
 		}
 		if err, ok := v.(error); ok {
 			// TODO: handle more than one error
-			return ParseQueryResult{
-				Err: err,
-			}
+			return message.NewQueryError(err)
 		}
 
 		b, err := json.MarshalIndent(v, "", "  ")
 		if err != nil {
-			return ParseQueryResult{
-				Err: err,
-			}
+			return message.NewQueryError(err)
 		}
 
 		result = append(result, string(b))
 	}
 
-	return ParseQueryResult{
-		Result: result,
-	}
+	return message.NewQueryResult(result)
 }
