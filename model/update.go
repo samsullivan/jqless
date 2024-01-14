@@ -14,7 +14,10 @@ import (
 )
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
+	var (
+		cmd  tea.Cmd
+		cmds []tea.Cmd
+	)
 
 	switch msg := msg.(type) {
 	// listen for errors
@@ -36,7 +39,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case spinner.TickMsg:
 		if !m.isLoading {
 			// stop spinner if no longer loading
-			break
+			return m, nil
 		}
 		m.spinner, cmd = m.spinner.Update(msg)
 		return m, cmd
@@ -75,30 +78,32 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
+	// handle viewport changes
+	m.viewport, cmd = m.viewport.Update(msg)
+	m.viewport.SetContent(m.viewportContents())
+	cmds = append(cmds, cmd)
+
 	// handle text input changes
 	m.textinput, cmd = m.textinput.Update(msg)
-	m.viewport.SetContent(m.viewportContents())
+	cmds = append(cmds, cmd)
 
 	// skip jq-related processing if file not processed into data yet
 	if m.data == nil {
 		// TODO: timeout
-		return m, cmd
-	}
+	} else {
+		// if query changed, trigger new parsing of jq
+		query := util.SanitizeQuery(m.textinput.Value(), m.textinput.Placeholder)
+		if query != m.lastQuery {
+			m.lastQuery = query
+			m.isLoading = true
 
-	// if query changed, trigger new parsing of jq
-	query := util.SanitizeQuery(m.textinput.Value(), m.textinput.Placeholder)
-	if query != m.lastQuery {
-		m.lastQuery = query
-		m.isLoading = true
-
-		// restart spinner in addition to triggering jq
-		return m, tea.Batch(
-			m.spinner.Tick,
-			func() tea.Msg {
+			// restart spinner in addition to triggering jq
+			cmds = append(cmds, m.spinner.Tick)
+			cmds = append(cmds, func() tea.Msg {
 				return jq.Query(m.data, query)
-			},
-		)
+			})
+		}
 	}
 
-	return m, cmd
+	return m, tea.Batch(cmds...)
 }
