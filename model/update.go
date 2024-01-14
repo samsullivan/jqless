@@ -1,10 +1,13 @@
 package model
 
 import (
+	"fmt"
+
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 
 	"github.com/samsullivan/jqless/jq"
+	"github.com/samsullivan/jqless/message"
 	"github.com/samsullivan/jqless/util"
 )
 
@@ -12,6 +15,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
+	// listen for errors
+	case message.FatalError:
+		// TODO: better error output
+		fmt.Printf("FatalError: %s\n\nexiting...\n\n", msg.Error())
+
+		cmd = tea.Quit
+		return m, cmd
 	// listen to keypresses
 	case tea.KeyMsg:
 		switch msg.Type {
@@ -28,6 +38,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.spinner, cmd = m.spinner.Update(msg)
 		return m, cmd
+	// listen for parsed JSON file
+	case message.ParsedFile:
+		m.data = msg.Data()
 	// listen for updated jq results
 	case jq.ParseQueryResult:
 		m.isLoading = false
@@ -41,9 +54,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	// handle text input changes
 	m.textinput, cmd = m.textinput.Update(msg)
-	query := util.SanitizeQuery(m.textinput.Value(), m.textinput.Placeholder)
+
+	// skip jq-related processing if file not processed into data yet
+	if m.data == nil {
+		// TODO: timeout
+		return m, cmd
+	}
 
 	// if query changed, trigger new parsing of jq
+	query := util.SanitizeQuery(m.textinput.Value(), m.textinput.Placeholder)
 	if query != m.lastQuery {
 		m.lastQuery = query
 		m.isLoading = true

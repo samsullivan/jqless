@@ -2,15 +2,21 @@ package model
 
 import (
 	"encoding/json"
+	"errors"
+	"io"
+	"os"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
+	tea "github.com/charmbracelet/bubbletea"
 
 	"github.com/samsullivan/jqless/jq"
+	"github.com/samsullivan/jqless/message"
 )
 
 type model struct {
-	// data is unmarshalled JSON user input
+	// related to JSON user input
+	file *os.File
 	data interface{}
 
 	// bubbletea components
@@ -24,25 +30,49 @@ type model struct {
 	lastSuccessfulResult []string
 }
 
-// New takes input JSON as a byte slice and returns a model for use by bubbletea.
-func New(input []byte) (*model, error) {
-	var m model
-
-	// parse input JSON, either from local file or piped data
-	err := json.Unmarshal(input, &m.data)
-	if err != nil {
-		panic(err)
-	}
+// New takes an open file and returns a model for use by bubbletea.
+// In order to show the spinner immediately, for larger JSON payloads,
+// The file stream isn't consumed or unmarshalled into JSON yet.
+func New(file *os.File) (*model, error) {
+	m := model{file: file}
 
 	// configure text input
-	ti := textinput.New()
-	ti.Placeholder = jq.DefaultQuery
-	ti.Focus()
-	m.textinput = ti
+	m.textinput = textinput.New()
+	m.textinput.Placeholder = jq.DefaultQuery
+	m.textinput.Focus()
 
 	// configure loading spinner
-	spin := spinner.New()
-	m.spinner = spin
+	m.spinner = spinner.New()
 
 	return &m, nil
+}
+
+func (m *model) parseFile() tea.Cmd {
+	return func() tea.Msg {
+		var data interface{}
+
+		// verify file exists
+		if m.file == nil {
+			return message.NewFatalError(
+				errors.New("no data passed to jqless"),
+			)
+		}
+
+		// close file when done reading
+		defer m.file.Close()
+
+		// read entire file
+		b, err := io.ReadAll(m.file)
+		if err != nil {
+			return message.NewFatalError(err)
+		}
+
+		// unmarshal to data interface
+		err = json.Unmarshal(b, &data)
+		if err != nil {
+			return message.NewFatalError(err)
+		}
+
+		return message.NewParsedFile(data)
+	}
 }

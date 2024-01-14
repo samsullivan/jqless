@@ -9,5 +9,6 @@ func (m model) Init() tea.Cmd {
 	return tea.Batch(
 		m.spinner.Tick,
 		textinput.Blink,
+		m.parseFile(),
 	)
 }
