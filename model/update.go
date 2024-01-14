@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/itchyny/gojq"
 
 	"github.com/samsullivan/jqless/jq"
 	"github.com/samsullivan/jqless/message"
@@ -69,7 +70,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	// listen for parsed JSON file
 	case message.ParsedFile:
-		m.data = msg.Data()
+		// prepare input JSON for concurrent gojq execution while querying
+		m.data = gojq.PrepareData(msg.Data())
 	// listen for updated jq results
 	case message.QueryResult:
 		m.isLoading = false

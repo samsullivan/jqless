@@ -10,6 +10,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/itchyny/gojq"
 
 	"github.com/samsullivan/jqless/jq"
 	"github.com/samsullivan/jqless/message"
@@ -20,7 +21,7 @@ type model struct {
 
 	// related to JSON user input
 	file *os.File
-	data interface{}
+	data gojq.PreparedData
 
 	// bubbletea components
 	viewport  viewport.Model
