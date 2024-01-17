@@ -11,8 +11,9 @@ import (
 
 // keyBindings defines the available key bindings.
 type keyBindings struct {
-	Extract key.Binding
-	Quit    key.Binding
+	ViewportNavigation key.Binding
+	Extract            key.Binding
+	Quit               key.Binding
 }
 
 // Validate that keyBindings satisfies help.KeyMap interface.
@@ -20,6 +21,10 @@ var _ help.KeyMap = (*keyBindings)(nil)
 
 // keys contains the actual key bindings as well as the related help text.
 var keys = keyBindings{
+	ViewportNavigation: key.NewBinding(
+		key.WithKeys("up", "down"),
+		key.WithHelp("↑/↓", "scroll output"),
+	),
 	Extract: key.NewBinding(
 		key.WithKeys("ctrl+x"),
 		key.WithHelp("ctrl+x", "extract (to clipboard)"),
@@ -32,13 +37,13 @@ var keys = keyBindings{
 
 // ShortHelp returns keybindings to be shown in the mini help view.
 func (k keyBindings) ShortHelp() []key.Binding {
-	return []key.Binding{k.Extract, k.Quit}
+	return []key.Binding{k.ViewportNavigation, k.Extract, k.Quit}
 }
 
 // FullHelp returns keybindings for the expanded help view.
 func (k keyBindings) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Extract, k.Quit},
+		{k.ViewportNavigation, k.Extract, k.Quit},
 		// TODO: additional actions
 	}
 }
@@ -50,6 +55,7 @@ func (m model) handleKeyMsg(msg tea.KeyMsg) (model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch {
+	// keys.ViewportNavigation is handled by caller with m.viewport.Update()
 	case key.Matches(msg, keys.Extract):
 		cmd = func() tea.Msg {
 			if err := util.WriteClipboard([]byte(m.viewportContents())); err != nil {
