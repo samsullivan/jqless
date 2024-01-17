@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
@@ -9,16 +10,16 @@ import (
 )
 
 var (
-	titleStyle = func() lipgloss.Style {
+	leftBoxStyle = func() lipgloss.Style {
 		b := lipgloss.RoundedBorder()
 		b.Right = "├"
 		return lipgloss.NewStyle().BorderStyle(b).Padding(0, 1)
 	}()
 
-	infoStyle = func() lipgloss.Style {
+	rightBoxStyleStyle = func() lipgloss.Style {
 		b := lipgloss.RoundedBorder()
 		b.Left = "┤"
-		return titleStyle.Copy().BorderStyle(b)
+		return leftBoxStyle.Copy().BorderStyle(b)
 	}()
 )
 
@@ -35,6 +36,8 @@ func (m model) View() string {
 }
 
 func (m model) headerView() string {
+	titleStyle := leftBoxStyle
+
 	var borderColor lipgloss.TerminalColor = lipgloss.NoColor{}
 	if m.lastError != nil {
 		borderColor = lipgloss.Color("#CF2222")
@@ -51,7 +54,18 @@ func (m model) viewportContents() string {
 }
 
 func (m model) footerView() string {
-	info := infoStyle.Render(m.help.View(keys))
-	line := strings.Repeat("─", util.Max(0, m.viewport.Width-lipgloss.Width(info)))
-	return lipgloss.JoinHorizontal(lipgloss.Center, line, info)
+	help := leftBoxStyle.Render(m.help.View(keys))
+
+	var info string
+	if m.viewport.TotalLineCount() > m.viewport.VisibleLineCount() {
+		info = rightBoxStyleStyle.Render(fmt.Sprintf(
+			"%s %3.f%%",
+			m.spinner.View(),
+			m.viewport.ScrollPercent()*100),
+		)
+	}
+
+	contentWidth := lipgloss.Width(help) + lipgloss.Width(info)
+	line := strings.Repeat("─", util.Max(0, m.viewport.Width-contentWidth))
+	return lipgloss.JoinHorizontal(lipgloss.Center, help, line, info)
 }

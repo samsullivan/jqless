@@ -52,6 +52,7 @@ func New(file *os.File) (*model, error) {
 
 	// configure loading spinner
 	m.spinner = spinner.New()
+	m.spinner.Spinner = spinner.MiniDot
 
 	return &m, nil
 }
