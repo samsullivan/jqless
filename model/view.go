@@ -14,13 +14,13 @@ var (
 		b := lipgloss.RoundedBorder()
 		b.Right = "├"
 		return lipgloss.NewStyle().BorderStyle(b).Padding(0, 1)
-	}()
+	}
 
 	rightBoxStyleStyle = func() lipgloss.Style {
 		b := lipgloss.RoundedBorder()
 		b.Left = "┤"
-		return leftBoxStyle.Copy().BorderStyle(b)
-	}()
+		return leftBoxStyle().Copy().BorderStyle(b)
+	}
 )
 
 func (m model) View() string {
@@ -36,7 +36,7 @@ func (m model) View() string {
 }
 
 func (m model) headerView() string {
-	titleStyle := leftBoxStyle
+	titleStyle := leftBoxStyle()
 
 	var borderColor lipgloss.TerminalColor = lipgloss.NoColor{}
 	if m.lastError != nil {
@@ -54,11 +54,11 @@ func (m model) viewportContents() string {
 }
 
 func (m model) footerView() string {
-	help := leftBoxStyle.Render(m.help.View(keys))
+	help := leftBoxStyle().Render(m.help.View(keys))
 
 	var info string
 	if m.viewport.TotalLineCount() > m.viewport.VisibleLineCount() {
-		info = rightBoxStyleStyle.Render(fmt.Sprintf(
+		info = rightBoxStyleStyle().Render(fmt.Sprintf(
 			"%s %3.f%%",
 			m.spinner.View(),
 			m.viewport.ScrollPercent()*100),
