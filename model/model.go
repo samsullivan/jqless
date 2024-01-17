@@ -40,7 +40,10 @@ type model struct {
 // In order to show the spinner immediately, for larger JSON payloads,
 // The file stream isn't consumed or unmarshalled into JSON yet.
 func New(file *os.File) (*model, error) {
-	m := model{file: file}
+	m := model{
+		file:      file,
+		isLoading: true,
+	}
 
 	// configure help
 	m.help = help.New()

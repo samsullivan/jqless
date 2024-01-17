@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
@@ -25,7 +26,7 @@ var (
 
 func (m model) View() string {
 	if !m.viewportReady || m.data == nil {
-		return ""
+		return m.footerView()
 	}
 
 	return strings.Join([]string{
@@ -56,14 +57,14 @@ func (m model) viewportContents() string {
 func (m model) footerView() string {
 	help := leftBoxStyle().Render(m.help.View(keys))
 
-	var info string
+	infoItems := make([]string, 1, 2)
+	infoItems[0] = m.spinner.View()
 	if m.viewport.TotalLineCount() > m.viewport.VisibleLineCount() {
-		info = rightBoxStyleStyle().Render(fmt.Sprintf(
-			"%s %3.f%%",
-			m.spinner.View(),
-			m.viewport.ScrollPercent()*100),
-		)
+		infoItems = append(infoItems, fmt.Sprintf("%3.f%%", m.viewport.ScrollPercent()*100))
 	}
+
+	slices.Reverse(infoItems)
+	info := rightBoxStyleStyle().Render(strings.Join(infoItems, " "))
 
 	contentWidth := lipgloss.Width(help) + lipgloss.Width(info)
 	line := strings.Repeat("─", util.Max(0, m.viewport.Width-contentWidth))
