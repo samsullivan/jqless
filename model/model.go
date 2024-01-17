@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
@@ -24,6 +25,7 @@ type model struct {
 
 	// bubbletea components
 	viewport  viewport.Model
+	help      help.Model
 	textinput textinput.Model
 	spinner   spinner.Model
 
@@ -40,6 +42,9 @@ type model struct {
 func New(file *os.File) (*model, error) {
 	m := model{file: file}
 
+	// configure help
+	m.help = help.New()
+
 	// configure text input
 	m.textinput = textinput.New()
 	m.textinput.Placeholder = jq.DefaultQuery
@@ -47,6 +52,7 @@ func New(file *os.File) (*model, error) {
 
 	// configure loading spinner
 	m.spinner = spinner.New()
+	m.spinner.Spinner = spinner.MiniDot
 
 	return &m, nil
 }
