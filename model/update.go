@@ -32,10 +32,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, cmd
 	// listen to keypresses
 	case tea.KeyMsg:
-		switch msg.Type {
-		// exit keys
-		case tea.KeyCtrlC, tea.KeyEscape, tea.KeyEnter:
-			cmd = tea.Quit
+		m, cmd = m.handleKeyMsg(msg)
+		if cmd != nil {
 			return m, cmd
 		}
 	// listen for spinner tick
