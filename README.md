@@ -2,6 +2,8 @@
 
 `jqless` is a combination between `jq` and `less`, enabling users to filter and extract data from JSON in real-time -- useful when first learning the syntax or for power users trying to extract multiple pieces of data from a single JSON blob.
 
+![demo](https://github.com/samsullivan/jqless/blob/main/assets/demo.gif?raw=true)
+
 #### Usage
 
 To use, start `jqless` in your favorite terminal by either piping JSON data to the process or including a file path as the first argument.
