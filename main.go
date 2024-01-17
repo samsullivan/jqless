@@ -40,7 +40,7 @@ func getFile() (file *os.File, err error) {
 			return nil, err
 		}
 
-		if stat.Mode()&os.ModeNamedPipe != 0 && stat.Size() != 0 {
+		if stat.Mode()&os.ModeNamedPipe != 0 {
 			file = os.Stdin
 		}
 	}
