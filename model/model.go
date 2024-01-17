@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
@@ -24,6 +25,7 @@ type model struct {
 
 	// bubbletea components
 	viewport  viewport.Model
+	help      help.Model
 	textinput textinput.Model
 	spinner   spinner.Model
 
@@ -39,6 +41,9 @@ type model struct {
 // The file stream isn't consumed or unmarshalled into JSON yet.
 func New(file *os.File) (*model, error) {
 	m := model{file: file}
+
+	// configure help
+	m.help = help.New()
 
 	// configure text input
 	m.textinput = textinput.New()

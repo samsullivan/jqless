@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
@@ -52,7 +51,7 @@ func (m model) viewportContents() string {
 }
 
 func (m model) footerView() string {
-	info := infoStyle.Render(fmt.Sprintf("%s %3.f%%", m.spinner.View(), m.viewport.ScrollPercent()*100))
+	info := infoStyle.Render(m.help.View(keys))
 	line := strings.Repeat("─", util.Max(0, m.viewport.Width-lipgloss.Width(info)))
 	return lipgloss.JoinHorizontal(lipgloss.Center, line, info)
 }
