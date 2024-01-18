@@ -1,27 +1,51 @@
 package main
 
 import (
+	"context"
+	"log"
 	"os"
+	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/urfave/cli/v3"
 
 	"github.com/samsullivan/jqless/model"
 )
 
-// main starts the bubbletea program
+var version = "0.0.0"
+
+// main registers cli flags and, if unused, starts the bubbletea program.
 func main() {
-	file, err := getFile()
-	if err != nil {
-		panic(err)
+	cmd := &cli.Command{
+		Name:    "jqless",
+		Usage:   "combining jq and less for real-time JSON parsing",
+		Version: version,
+		UsageText: strings.Join([]string{
+			"jqless [path/to/file.json]",
+			"cat [path/to/file.json] | jqless",
+		}, "\n"),
+		HideHelpCommand: true,
+		Action: func(context.Context, *cli.Command) error {
+			file, err := getFile()
+			if err != nil {
+				return err
+			}
+
+			m, err := model.New(file)
+			if err != nil {
+				return err
+			}
+
+			if _, err := tea.NewProgram(m).Run(); err != nil {
+				return err
+			}
+
+			return nil
+		},
 	}
 
-	m, err := model.New(file)
-	if err != nil {
-		panic(err)
-	}
-
-	if _, err := tea.NewProgram(m).Run(); err != nil {
-		panic(err)
+	if err := cmd.Run(context.Background(), os.Args); err != nil {
+		log.Fatal(err)
 	}
 }
 
@@ -40,7 +64,7 @@ func getFile() (file *os.File, err error) {
 			return nil, err
 		}
 
-		if stat.Mode()&os.ModeNamedPipe != 0 && stat.Size() != 0 {
+		if stat.Mode()&os.ModeNamedPipe != 0 {
 			file = os.Stdin
 		}
 	}

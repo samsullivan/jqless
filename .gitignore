@@ -16,3 +16,4 @@ go.work
 
 # goreleaser
 dist/
+jqless-build/

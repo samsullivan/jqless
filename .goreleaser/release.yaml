@@ -1,0 +1,29 @@
+version: 1
+
+builds:
+  - skip: true
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^chore:"
+      - "^docs:"
+      - "^test:"
+
+release:
+  name_template: "{{.Tag}} {{.TagSubject}}"
+  prerelease: auto
+  extra_files:
+    - glob: ./dist/**/*
+
+brews:
+  -
+    name: jqless
+    homepage: "https://github.com/samsullivan/jqless"
+    repository:
+      owner: samsullivan
+      name: homebrew-samsullivan
+    commit_author:
+      name: samsullivan
+      email: samsullivan09@gmail.com
