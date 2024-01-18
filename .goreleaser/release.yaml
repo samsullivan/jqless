@@ -3,9 +3,6 @@ version: 1
 builds:
   - skip: true
 
-checksum:
-  name_template: 'checksums.txt'
-
 changelog:
   sort: asc
   filters:
@@ -15,6 +12,7 @@ changelog:
       - "^test:"
 
 release:
+  name_template: "{{.Tag}} {{.TagSubject}}"
   prerelease: auto
   extra_files:
     - glob: ./dist/**/*
