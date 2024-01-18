@@ -36,6 +36,8 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: 1.21.5
+      - name: Install cross-compiler libraries
+        run: sudo apt-get install -y gcc-aarch64-linux-gnu
       - name: Build
         uses: goreleaser/goreleaser-action@v5
         with:
