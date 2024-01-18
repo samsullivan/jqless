@@ -6,8 +6,6 @@ permissions:
   contents: write
 
 jobs:
-
-jobs:
   build-darwin:
     runs-on: macos-latest
     steps:
