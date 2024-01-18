@@ -1,6 +1,6 @@
 name: goreleaser
 
-on: [push, pull_request]
+on: [pull_request]
 
 permissions:
   contents: write
@@ -18,7 +18,7 @@ jobs:
       - name: Build
         uses: goreleaser/goreleaser-action@v5
         with:
-          args: release --skip-publish --config .goreleaser/darwin.yaml
+          args: release --skip=announce,publish,validate --config .goreleaser/darwin.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
       - name: Upload
@@ -39,7 +39,7 @@ jobs:
       - name: Build
         uses: goreleaser/goreleaser-action@v5
         with:
-          args: release --skip-publish --config .goreleaser/linux.yaml
+          args: release --skip=announce,publish,validate --config .goreleaser/linux.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
       - name: Upload
@@ -60,7 +60,7 @@ jobs:
       - name: Build
         uses: goreleaser/goreleaser-action@v5
         with:
-          args: release --skip-publish --config .goreleaser/windows.yaml
+          args: release --skip=announce,publish,validate --config .goreleaser/windows.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
       - name: Upload
