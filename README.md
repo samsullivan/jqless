@@ -4,7 +4,16 @@
 
 ![demo](https://github.com/samsullivan/jqless/blob/main/assets/demo.gif?raw=true)
 
-#### Usage
+### Installation
+
+Build from source with Go, see [the release binaries](https://github.com/samsullivan/jqless/releases), or use Homebrew if on Mac:
+
+```
+brew tap samsullivan/samsullivan
+brew install jqless
+```
+
+### Usage
 
 To use, start `jqless` in your favorite terminal by either piping JSON data to the process or including a file path as the first argument.
 
@@ -17,6 +26,6 @@ Once loaded, type your `jq` query as expected and see the results filter. To ext
 
 More options to come in future versions!
 
-#### Acknowledgements
+### Acknowledgements
 
 It is written in Golang using the [Bubble Tea framework](https://github.com/charmbracelet/bubbletea) and [`gojq`](https://github.com/itchyny/gojq). Inspiration h/t to [`jq-live`](https://github.com/TheDahv/jq-live).
