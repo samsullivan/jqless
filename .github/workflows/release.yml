@@ -1,6 +1,9 @@
 name: goreleaser
 
-on: [pull_request]
+on:
+  push:
+    tags:
+      - "*"
 
 permissions:
   contents: write
@@ -18,7 +21,7 @@ jobs:
       - name: Build
         uses: goreleaser/goreleaser-action@v5
         with:
-          args: release --skip=announce,publish,validate --config .goreleaser/darwin.yaml
+          args: release --skip=announce,publish --config .goreleaser/darwin.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
       - name: Upload
@@ -41,7 +44,7 @@ jobs:
       - name: Build
         uses: goreleaser/goreleaser-action@v5
         with:
-          args: release --skip=announce,publish,validate --config .goreleaser/linux.yaml
+          args: release --skip=announce,publish --config .goreleaser/linux.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
       - name: Upload
@@ -62,7 +65,7 @@ jobs:
       - name: Build
         uses: goreleaser/goreleaser-action@v5
         with:
-          args: release --skip=announce,publish,validate --config .goreleaser/windows.yaml
+          args: release --skip=announce,publish --config .goreleaser/windows.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
       - name: Upload
@@ -110,3 +113,9 @@ jobs:
           rm ./darwin/jqless*checksums.txt
           rm ./linux/jqless*checksums.txt
           rm ./windows/jqless*checksums.txt
+      - name: Release
+        uses: goreleaser/goreleaser-action@v5
+        with:
+          args: release --config scripts/.goreleaser/release.yaml
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
