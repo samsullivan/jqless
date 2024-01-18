@@ -9,6 +9,9 @@ builds:
       - CGO_ENABLED=1
     goos:
       - linux
+    goarch: # TODO: ideally remove this and support cross-compiling all architectures
+      - arm64
+      - amd64
     overrides:
       - goos: linux
         goarch: arm64
