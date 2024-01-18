@@ -11,6 +11,12 @@ builds:
       - windows
       - darwin
 
+release:
+  prerelease: auto
+
+universal_binaries:
+  - replace: true
+
 archives:
   - format: tar.gz
     # this name template makes the OS and Arch compatible with the results of `uname`.
@@ -26,6 +32,9 @@ archives:
       - goos: windows
         format: zip
 
+checksum:
+  name_template: 'checksums.txt'
+
 changelog:
   sort: asc
   filters:
@@ -33,3 +42,14 @@ changelog:
       - "^chore:"
       - "^docs:"
       - "^test:"
+
+brews:
+  -
+    name: jqless
+    homepage: "https://github.com/samsullivan/jqless"
+    repository:
+      owner: samsullivan
+      name: homebrew-samsullivan
+    commit_author:
+      name: samsullivan
+      email: samsullivan09@gmail.com
