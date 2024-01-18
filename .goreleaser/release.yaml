@@ -15,7 +15,8 @@ release:
   name_template: "{{.Tag}} {{.TagSubject}}"
   prerelease: auto
   extra_files:
-    - glob: ./dist/**/*
+    - glob: ./jqless-build/**/*
+    - glob: ./jqless-build/checksums.txt
 
 brews:
   -
