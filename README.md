@@ -18,8 +18,8 @@ brew install jqless
 To use, start `jqless` in your favorite terminal by either piping JSON data to the process or including a file path as the first argument.
 
 ```
-cat /path/to/file.json | jqless
-jqless /path/to/file.json
+jqless [path/to/file.json]
+cat [path/to/file.json] | jqless
 ```
 
 Once loaded, type your `jq` query as expected and see the results filter. To extract results to your clipboard, use `ctrl+x` as shown in help text.
