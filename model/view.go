@@ -25,6 +25,11 @@ var (
 )
 
 func (m model) View() string {
+	if m.file == nil {
+		// FatalError will be returned by parseFile() command triggered by Init().
+		return ""
+	}
+
 	if !m.viewportReady || m.data == nil {
 		return m.footerView()
 	}
