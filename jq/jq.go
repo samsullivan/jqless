@@ -10,9 +10,9 @@ import (
 
 const DefaultQuery = "."
 
-// Query takes unmarshalled JSON data and an input query.
+// Query takes JSON data (prepared by gojq) and an input query.
 // On success, returns a slice of strings from gojq result.
-func Query(data interface{}, input string) message.QueryResult {
+func Query(data gojq.PreparedData, input string) message.QueryResult {
 	query, err := gojq.Parse(input)
 	if err != nil {
 		return message.NewQueryError(err)
@@ -20,7 +20,7 @@ func Query(data interface{}, input string) message.QueryResult {
 
 	var result []string
 
-	iter := query.Run(data)
+	iter := query.ConcurrentRun(data)
 	for {
 		v, ok := iter.Next()
 		if !ok {
