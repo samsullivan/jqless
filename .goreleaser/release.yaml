@@ -17,14 +17,3 @@ release:
   extra_files:
     - glob: ./jqless-build/**/*
     - glob: ./jqless-build/checksums.txt
-
-# brews:
-#   -
-#     name: jqless
-#     homepage: "https://github.com/samsullivan/jqless"
-#     repository:
-#       owner: samsullivan
-#       name: homebrew-samsullivan
-#     commit_author:
-#       name: samsullivan
-#       email: samsullivan09@gmail.com

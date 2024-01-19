@@ -3,7 +3,7 @@ name: goreleaser
 on:
   push:
     tags:
-      - "*"
+      - "v*"
 
 permissions:
   contents: write
@@ -24,7 +24,7 @@ jobs:
           args: release --skip=announce,publish --config .goreleaser/darwin.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
-      - name: Upload
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: jqless-darwin
@@ -47,7 +47,7 @@ jobs:
           args: release --skip=announce,publish --config .goreleaser/linux.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
-      - name: Upload
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: jqless-linux
@@ -68,7 +68,7 @@ jobs:
           args: release --skip=announce,publish --config .goreleaser/windows.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
-      - name: Upload
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: jqless-windows
@@ -104,7 +104,7 @@ jobs:
         with:
           name: jqless-windows
           path: ./jqless-build/windows
-      - name: Merge checksum file
+      - name: Merge checksum files
         run: |
           cd ./jqless-build
           cat ./darwin/jqless*checksums.txt >> checksums.txt
@@ -119,3 +119,42 @@ jobs:
           args: release --config .goreleaser/release.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+      - name: Upload checksum
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-checksums
+          path: jqless-build/checksums.txt
+
+  push:
+    needs: [release]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: samsullivan/homebrew-samsullivan
+          ref: 'master'
+          token:  ${{ secrets.RELEASE_GITHUB_TOKEN }}
+      - name: Setup git config
+        run: |
+          git config user.name "GitHub Actions Bot (jqless)"
+          git config user.email "<>"
+      - name: Download release checksums
+        uses: actions/download-artifact@v4
+        with:
+          name: release-checksums
+          path: ./checksums.txt
+      - name: Make changes to jqless homebrew file
+        run: |
+          cp jqless.rb.template jqless.rb
+          echo ${{ github.event.release.tag_name }} | sed 's/v//' |\
+            xargs -I{} sed -i -e 's/%VERSION%/{}/g' jqless.rb
+          grep Darwin_all checksums.txt | awk '{print $1}' |\
+            xargs -I{} sed -i -e 's/%DARWIN_SHA%/{}/g' jqless.rb
+          grep Linux_arm checksums.txt | awk '{print $1}' |\
+            xargs -I{} sed -i -e 's/%LINUX_ARM_SHA%/{}/g' jqless.rb
+          grep Linux_x86_64 checksums.txt | awk '{print $1}' |\
+            xargs -I{} sed -i -e 's/%LINUX_INTEL_SHA%/{}/g' jqless.rb
+          rm checksums.txt
+          git add jqless.rb
+          git commit -m ""
+      - run: git push origin master
