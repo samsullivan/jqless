@@ -14,9 +14,9 @@ import (
 
 // keyBindings defines the available key bindings.
 type keyBindings struct {
-	ViewportNavigation key.Binding
-	Extract            key.Binding
 	SwitchFocus        key.Binding
+	Extract            key.Binding
+	ViewportNavigation key.Binding
 	Compact            key.Binding
 	Raw                key.Binding
 	Quit               key.Binding
@@ -28,21 +28,21 @@ var _ help.KeyMap = (*keyBindings)(nil)
 
 // inputKeys contains the key binding & help text when input is focused.
 var inputKeys = keyBindings{
-	ViewportNavigation: getViewportNavigationKeyBinding(nil),
-	Extract:            getExtractKeyBinding(true),
 	SwitchFocus:        getSwitchFocusKeyBinding(nil),
+	Extract:            getExtractKeyBinding(true),
+	ViewportNavigation: getViewportNavigationKeyBinding(nil),
 	Quit:               getQuitKeyBinding(),
 }
 
 // inputKeys contains the key binding & help text when viewport is focused.
 var viewportKeys = keyBindings{
+	SwitchFocus: getSwitchFocusKeyBinding(util.Ptr("edit query")),
+	Extract:     getExtractKeyBinding(false),
 	ViewportNavigation: getViewportNavigationKeyBinding([][]string{
 		{"j", "k"},
 		{"f", "b"},
 		{"d", "u"},
 	}),
-	Extract:     getExtractKeyBinding(false),
-	SwitchFocus: getSwitchFocusKeyBinding(util.Ptr("edit query")),
 	Compact: key.NewBinding(
 		key.WithKeys("c"),
 		key.WithHelp("c", "compact output"),
@@ -52,6 +52,30 @@ var viewportKeys = keyBindings{
 		key.WithHelp("r", "raw output"),
 	),
 	Quit: getQuitKeyBinding(),
+}
+
+// getSwitchFocusKeyBinding allows overriding the help text.
+func getSwitchFocusKeyBinding(customHelpText *string) key.Binding {
+	helpText := "more options"
+	if customHelpText != nil {
+		helpText = *customHelpText
+	}
+	return key.NewBinding(
+		key.WithKeys("tab"),
+		key.WithHelp("⇥", helpText),
+	)
+}
+
+// getExtractKeyBinding allows optional enforcing of ctrl keypress.
+func getExtractKeyBinding(requiresCtrl bool) key.Binding {
+	keys := []string{"ctrl+x"}
+	if !requiresCtrl {
+		keys = append(keys, "x")
+	}
+	return key.NewBinding(
+		key.WithKeys(keys...),
+		key.WithHelp(keys[len(keys)-1], "extract (to clipboard)"),
+	)
 }
 
 // getViewportNavigationKeyBinding shows extra vim scrollable shortcuts.
@@ -73,30 +97,6 @@ func getViewportNavigationKeyBinding(extraHelpKeySets [][]string) key.Binding {
 	)
 }
 
-// getExtractKeyBinding allows optional enforcing of ctrl keypress.
-func getExtractKeyBinding(requiresCtrl bool) key.Binding {
-	keys := []string{"ctrl+x"}
-	if !requiresCtrl {
-		keys = append(keys, "x")
-	}
-	return key.NewBinding(
-		key.WithKeys(keys...),
-		key.WithHelp(keys[len(keys)-1], "extract (to clipboard)"),
-	)
-}
-
-// getSwitchFocusKeyBinding allows overriding the help text.
-func getSwitchFocusKeyBinding(customHelpText *string) key.Binding {
-	helpText := "more options"
-	if customHelpText != nil {
-		helpText = *customHelpText
-	}
-	return key.NewBinding(
-		key.WithKeys("tab"),
-		key.WithHelp("⇥", helpText),
-	)
-}
-
 // getQuitKeyBinding has no options.
 func getQuitKeyBinding() key.Binding {
 	return key.NewBinding(
@@ -107,15 +107,19 @@ func getQuitKeyBinding() key.Binding {
 
 // ShortHelp returns keybindings to be shown in the mini help view.
 func (k keyBindings) ShortHelp() []key.Binding {
-	return []key.Binding{k.ViewportNavigation, k.Extract, k.SwitchFocus, k.Quit}
+	return []key.Binding{
+		k.SwitchFocus,
+		k.Extract,
+		k.ViewportNavigation,
+		k.Quit}
 }
 
 // FullHelp returns keybindings for the expanded help view, used when viewport focused.
 func (k keyBindings) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.ViewportNavigation},
-		{k.Extract},
 		{k.SwitchFocus},
+		{k.Extract},
+		{k.ViewportNavigation},
 		{k.Compact},
 		{k.Raw},
 		{k.Quit},
