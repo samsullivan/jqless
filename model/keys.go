@@ -102,6 +102,7 @@ func (m model) handleKeyMsg(msg tea.KeyMsg) (model, tea.Cmd) {
 			m.textinput.Cursor.Blink = true
 		case focusViewport:
 			m.currentFocus = focusInput
+			m.textinput.Cursor.Blink = false
 			cmd = textinput.Blink
 		}
 		return m, cmd
