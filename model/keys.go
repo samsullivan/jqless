@@ -33,10 +33,10 @@ var inputKeys = keyBindings{
 
 // inputKeys contains the key binding & help text when viewport is focused.
 var viewportKeys = keyBindings{
-	ViewportNavigation: getViewportNavigationKeyBinding([]string{
-		"j/k",
-		"f/b",
-		"d/u",
+	ViewportNavigation: getViewportNavigationKeyBinding([][]string{
+		{"j", "k"},
+		{"f", "b"},
+		{"d", "u"},
 	}),
 	Extract:     getExtractKeyBinding(false),
 	SwitchFocus: getSwitchFocusKeyBinding(util.Ptr("edit query")),
@@ -44,12 +44,20 @@ var viewportKeys = keyBindings{
 }
 
 // getViewportNavigationKeyBinding shows extra vim scrollable shortcuts.
-func getViewportNavigationKeyBinding(extraHelpKeys []string) key.Binding {
-	helpKeys := make([]string, 0, len(extraHelpKeys)+1)
+func getViewportNavigationKeyBinding(extraHelpKeySets [][]string) key.Binding {
+	keys := make([]string, 0, (len(extraHelpKeySets)*2)+1)
+	keys = append(keys, "down", "up")
+
+	helpKeys := make([]string, 0, len(extraHelpKeySets)+1)
 	helpKeys = append(helpKeys, "↓/↑")
-	helpKeys = append(helpKeys, extraHelpKeys...)
+
+	for _, extraHelpKeySet := range extraHelpKeySets {
+		keys = append(keys, extraHelpKeySet...)
+		helpKeys = append(helpKeys, strings.Join(extraHelpKeySet, "/"))
+	}
+
 	return key.NewBinding(
-		key.WithKeys("down", "up"), // always down/up, regardless of extraHelpKeys
+		key.WithKeys(keys...),
 		key.WithHelp(strings.Join(helpKeys, "·"), "scroll output"),
 	)
 }
@@ -104,8 +112,6 @@ func (m model) handleKeyMsg(msg tea.KeyMsg) (model, tea.Cmd) {
 
 	switch {
 	case key.Matches(msg, inputKeys.ViewportNavigation, viewportKeys.ViewportNavigation):
-		// this is only needed for ↓/↑ navigation; when focus on viewport,
-		// the main Update() will handle all viewport update messages
 		m.viewport, cmd = m.viewport.Update(msg)
 		return m, cmd
 	case key.Matches(msg, inputKeys.Extract, viewportKeys.Extract):
