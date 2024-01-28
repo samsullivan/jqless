@@ -61,7 +61,11 @@ func (m model) viewportContents() string {
 
 func (m model) footerView() string {
 	k := keys
-	if m.currentFocus == focusViewport {
+	switch m.currentFocus {
+	case focusInput:
+		k.SwitchFocus = getSwitchFocusKeyBinding(util.Ptr("more options"))
+	case focusViewport:
+		k.SwitchFocus = getSwitchFocusKeyBinding(util.Ptr("edit query"))
 		k.ViewportNavigation = getViewportNavigationKeyBinding([]string{
 			"j/k",
 			"f/b",

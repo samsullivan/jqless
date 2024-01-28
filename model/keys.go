@@ -23,7 +23,7 @@ type keyBindings struct {
 // Validate that keyBindings satisfies help.KeyMap interface.
 var _ help.KeyMap = (*keyBindings)(nil)
 
-// getViewportNavigationKeyBinding shows extra vim scrollable shortcuts
+// getViewportNavigationKeyBinding shows extra vim scrollable shortcuts.
 func getViewportNavigationKeyBinding(extraHelpKeys []string) key.Binding {
 	helpKeys := make([]string, 0, len(extraHelpKeys)+1)
 	helpKeys = append(helpKeys, "↓/↑")
@@ -34,6 +34,18 @@ func getViewportNavigationKeyBinding(extraHelpKeys []string) key.Binding {
 	)
 }
 
+// getSwitchFocusKeyBinding allows overriding the help text.
+func getSwitchFocusKeyBinding(customHelpText *string) key.Binding {
+	helpText := "more options"
+	if customHelpText != nil {
+		helpText = *customHelpText
+	}
+	return key.NewBinding(
+		key.WithKeys("tab"),
+		key.WithHelp("⇥", helpText),
+	)
+}
+
 // keys contains the actual key bindings as well as the related help text.
 var keys = keyBindings{
 	ViewportNavigation: getViewportNavigationKeyBinding(nil),
@@ -41,10 +53,7 @@ var keys = keyBindings{
 		key.WithKeys("ctrl+x"),
 		key.WithHelp("ctrl+x", "extract (to clipboard)"),
 	),
-	SwitchFocus: key.NewBinding(
-		key.WithKeys("tab"),
-		key.WithHelp("⇥", "more options"),
-	),
+	SwitchFocus: getSwitchFocusKeyBinding(nil),
 	Quit: key.NewBinding(
 		key.WithKeys("ctrl+c"),
 		key.WithHelp("ctrl+c", "quit"),
