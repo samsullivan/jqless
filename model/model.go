@@ -25,7 +25,6 @@ const (
 
 type model struct {
 	viewportReady bool
-	currentFocus  focus
 
 	// related to JSON user input
 	file *os.File
@@ -42,6 +41,11 @@ type model struct {
 	lastError   error
 	lastQuery   string
 	lastResults []string
+
+	// various settings
+	currentFocus  focus
+	compactOutput bool
+	rawOutput     bool
 }
 
 // New takes an open file and returns a model for use by bubbletea.

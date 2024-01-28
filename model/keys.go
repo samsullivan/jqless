@@ -133,19 +133,6 @@ func (m model) handleKeyMsg(msg tea.KeyMsg) (model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch {
-	case key.Matches(msg, inputKeys.ViewportNavigation, viewportKeys.ViewportNavigation):
-		m.viewport, cmd = m.viewport.Update(msg)
-		return m, cmd
-	case key.Matches(msg, inputKeys.Extract, viewportKeys.Extract):
-		cmd = func() tea.Msg {
-			if err := util.WriteClipboard([]byte(m.viewportContents())); err != nil {
-				return message.NewFatalError(err)
-			}
-
-			// TODO: success indication (flash help text green?)
-			return nil
-		}
-		return m, cmd
 	case key.Matches(msg, inputKeys.SwitchFocus, viewportKeys.SwitchFocus):
 		switch m.currentFocus {
 		case focusInput:
@@ -158,6 +145,25 @@ func (m model) handleKeyMsg(msg tea.KeyMsg) (model, tea.Cmd) {
 			m.textinput.Cursor.Blink = false
 			cmd = textinput.Blink
 		}
+		return m, cmd
+	case key.Matches(msg, inputKeys.Extract, viewportKeys.Extract):
+		cmd = func() tea.Msg {
+			if err := util.WriteClipboard([]byte(m.viewportContents())); err != nil {
+				return message.NewFatalError(err)
+			}
+
+			// TODO: success indication (flash help text green?)
+			return nil
+		}
+		return m, cmd
+	case key.Matches(msg, viewportKeys.Compact):
+		m.compactOutput = !m.compactOutput
+		return m, cmd
+	case key.Matches(msg, viewportKeys.Raw):
+		m.rawOutput = !m.rawOutput
+		return m, cmd
+	case key.Matches(msg, inputKeys.ViewportNavigation, viewportKeys.ViewportNavigation):
+		m.viewport, cmd = m.viewport.Update(msg)
 		return m, cmd
 	case key.Matches(msg, inputKeys.Quit, viewportKeys.Quit):
 		cmd = tea.Quit
