@@ -16,16 +16,16 @@ import (
 	"github.com/samsullivan/jqless/message"
 )
 
-type Focus int
+type focus int
 
 const (
-	focusInput Focus = iota
+	focusInput focus = iota
 	focusViewport
 )
 
 type model struct {
 	viewportReady bool
-	currentFocus  Focus
+	currentFocus  focus
 
 	// related to JSON user input
 	file *os.File

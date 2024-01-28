@@ -1,6 +1,8 @@
 package model
 
 import (
+	"strings"
+
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -21,12 +23,20 @@ type keyBindings struct {
 // Validate that keyBindings satisfies help.KeyMap interface.
 var _ help.KeyMap = (*keyBindings)(nil)
 
+// getViewportNavigationKeyBinding shows extra vim scrollable shortcuts
+func getViewportNavigationKeyBinding(extraHelpKeys []string) key.Binding {
+	helpKeys := make([]string, 0, len(extraHelpKeys)+1)
+	helpKeys = append(helpKeys, "↓/↑")
+	helpKeys = append(helpKeys, extraHelpKeys...)
+	return key.NewBinding(
+		key.WithKeys("down", "up"), // always down/up, regardless of extraHelpKeys
+		key.WithHelp(strings.Join(helpKeys, "·"), "scroll output"),
+	)
+}
+
 // keys contains the actual key bindings as well as the related help text.
 var keys = keyBindings{
-	ViewportNavigation: key.NewBinding(
-		key.WithKeys("up", "down"),
-		key.WithHelp("↑/↓", "scroll output"),
-	),
+	ViewportNavigation: getViewportNavigationKeyBinding(nil),
 	Extract: key.NewBinding(
 		key.WithKeys("ctrl+x"),
 		key.WithHelp("ctrl+x", "extract (to clipboard)"),
@@ -62,6 +72,8 @@ func (m model) handleKeyMsg(msg tea.KeyMsg) (model, tea.Cmd) {
 
 	switch {
 	case key.Matches(msg, keys.ViewportNavigation):
+		// this is only needed for ↓/↑ navigation; when focus on viewport,
+		// the main Update() will handle all viewport update messages
 		m.viewport, cmd = m.viewport.Update(msg)
 		return m, cmd
 	case key.Matches(msg, keys.Extract):
