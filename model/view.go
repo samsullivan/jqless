@@ -60,7 +60,14 @@ func (m model) viewportContents() string {
 }
 
 func (m model) footerView() string {
-	help := leftBoxStyle().Render(m.help.View(keys))
+	var k keyBindings
+	switch m.currentFocus {
+	case focusInput:
+		k = inputKeys
+	case focusViewport:
+		k = viewportKeys
+	}
+	help := leftBoxStyle().Render(m.help.View(k))
 
 	infoItems := make([]string, 1, 2)
 	infoItems[0] = m.spinner.View()

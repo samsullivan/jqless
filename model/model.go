@@ -16,6 +16,13 @@ import (
 	"github.com/samsullivan/jqless/message"
 )
 
+type focus int
+
+const (
+	focusInput focus = iota
+	focusViewport
+)
+
 type model struct {
 	viewportReady bool
 
@@ -34,6 +41,11 @@ type model struct {
 	lastError   error
 	lastQuery   string
 	lastResults []string
+
+	// various settings
+	currentFocus  focus
+	compactOutput bool
+	rawOutput     bool
 }
 
 // New takes an open file and returns a model for use by bubbletea.
@@ -41,12 +53,14 @@ type model struct {
 // The file stream isn't consumed or unmarshalled into JSON yet.
 func New(file *os.File) (*model, error) {
 	m := model{
-		file:      file,
-		isLoading: true,
+		currentFocus: focusInput,
+		file:         file,
+		isLoading:    true,
 	}
 
 	// configure help
 	m.help = help.New()
+	m.help.FullSeparator = m.help.ShortSeparator
 
 	// configure text input
 	m.textinput = textinput.New()
