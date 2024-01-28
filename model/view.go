@@ -60,17 +60,12 @@ func (m model) viewportContents() string {
 }
 
 func (m model) footerView() string {
-	k := keys
+	var k keyBindings
 	switch m.currentFocus {
 	case focusInput:
-		k.SwitchFocus = getSwitchFocusKeyBinding(util.Ptr("more options"))
+		k = inputKeys
 	case focusViewport:
-		k.SwitchFocus = getSwitchFocusKeyBinding(util.Ptr("edit query"))
-		k.ViewportNavigation = getViewportNavigationKeyBinding([]string{
-			"j/k",
-			"f/b",
-			"d/u",
-		})
+		k = viewportKeys
 	}
 	help := leftBoxStyle().Render(m.help.View(k))
 

@@ -23,6 +23,26 @@ type keyBindings struct {
 // Validate that keyBindings satisfies help.KeyMap interface.
 var _ help.KeyMap = (*keyBindings)(nil)
 
+// inputKeys contains the key binding & help text when input is focused.
+var inputKeys = keyBindings{
+	ViewportNavigation: getViewportNavigationKeyBinding(nil),
+	Extract:            getExtractKeyBinding(true),
+	SwitchFocus:        getSwitchFocusKeyBinding(nil),
+	Quit:               getQuitKeyBinding(),
+}
+
+// inputKeys contains the key binding & help text when viewport is focused.
+var viewportKeys = keyBindings{
+	ViewportNavigation: getViewportNavigationKeyBinding([]string{
+		"j/k",
+		"f/b",
+		"d/u",
+	}),
+	Extract:     getExtractKeyBinding(false),
+	SwitchFocus: getSwitchFocusKeyBinding(util.Ptr("edit query")),
+	Quit:        getQuitKeyBinding(),
+}
+
 // getViewportNavigationKeyBinding shows extra vim scrollable shortcuts.
 func getViewportNavigationKeyBinding(extraHelpKeys []string) key.Binding {
 	helpKeys := make([]string, 0, len(extraHelpKeys)+1)
@@ -31,6 +51,18 @@ func getViewportNavigationKeyBinding(extraHelpKeys []string) key.Binding {
 	return key.NewBinding(
 		key.WithKeys("down", "up"), // always down/up, regardless of extraHelpKeys
 		key.WithHelp(strings.Join(helpKeys, "·"), "scroll output"),
+	)
+}
+
+// getExtractKeyBinding allows optional enforcing of ctrl keypress.
+func getExtractKeyBinding(requiresCtrl bool) key.Binding {
+	keys := []string{"ctrl+x"}
+	if !requiresCtrl {
+		keys = append(keys, "x")
+	}
+	return key.NewBinding(
+		key.WithKeys(keys...),
+		key.WithHelp(keys[len(keys)-1], "extract (to clipboard)"),
 	)
 }
 
@@ -46,18 +78,12 @@ func getSwitchFocusKeyBinding(customHelpText *string) key.Binding {
 	)
 }
 
-// keys contains the actual key bindings as well as the related help text.
-var keys = keyBindings{
-	ViewportNavigation: getViewportNavigationKeyBinding(nil),
-	Extract: key.NewBinding(
-		key.WithKeys("ctrl+x"),
-		key.WithHelp("ctrl+x", "extract (to clipboard)"),
-	),
-	SwitchFocus: getSwitchFocusKeyBinding(nil),
-	Quit: key.NewBinding(
+// getQuitKeyBinding has no options.
+func getQuitKeyBinding() key.Binding {
+	return key.NewBinding(
 		key.WithKeys("ctrl+c"),
 		key.WithHelp("ctrl+c", "quit"),
-	),
+	)
 }
 
 // ShortHelp returns keybindings to be shown in the mini help view.
@@ -65,12 +91,9 @@ func (k keyBindings) ShortHelp() []key.Binding {
 	return []key.Binding{k.ViewportNavigation, k.Extract, k.SwitchFocus, k.Quit}
 }
 
-// FullHelp returns keybindings for the expanded help view.
+// FullHelp returns keybindings for the expanded help view; not implemented.
 func (k keyBindings) FullHelp() [][]key.Binding {
-	return [][]key.Binding{
-		{k.ViewportNavigation, k.Extract, k.SwitchFocus, k.Quit},
-		// TODO: additional actions
-	}
+	return [][]key.Binding{k.ShortHelp()}
 }
 
 // handleKeyMsg is used by Update() when a KeyMsg is received.
@@ -80,12 +103,12 @@ func (m model) handleKeyMsg(msg tea.KeyMsg) (model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch {
-	case key.Matches(msg, keys.ViewportNavigation):
+	case key.Matches(msg, inputKeys.ViewportNavigation, viewportKeys.ViewportNavigation):
 		// this is only needed for ↓/↑ navigation; when focus on viewport,
 		// the main Update() will handle all viewport update messages
 		m.viewport, cmd = m.viewport.Update(msg)
 		return m, cmd
-	case key.Matches(msg, keys.Extract):
+	case key.Matches(msg, inputKeys.Extract, viewportKeys.Extract):
 		cmd = func() tea.Msg {
 			if err := util.WriteClipboard([]byte(m.viewportContents())); err != nil {
 				return message.NewFatalError(err)
@@ -95,7 +118,7 @@ func (m model) handleKeyMsg(msg tea.KeyMsg) (model, tea.Cmd) {
 			return nil
 		}
 		return m, cmd
-	case key.Matches(msg, keys.SwitchFocus):
+	case key.Matches(msg, inputKeys.SwitchFocus, viewportKeys.SwitchFocus):
 		switch m.currentFocus {
 		case focusInput:
 			m.currentFocus = focusViewport
@@ -106,7 +129,7 @@ func (m model) handleKeyMsg(msg tea.KeyMsg) (model, tea.Cmd) {
 			cmd = textinput.Blink
 		}
 		return m, cmd
-	case key.Matches(msg, keys.Quit):
+	case key.Matches(msg, inputKeys.Quit, viewportKeys.Quit):
 		cmd = tea.Quit
 		return m, cmd
 	}
