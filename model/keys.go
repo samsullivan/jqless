@@ -17,10 +17,13 @@ type keyBindings struct {
 	ViewportNavigation key.Binding
 	Extract            key.Binding
 	SwitchFocus        key.Binding
+	Compact            key.Binding
+	Raw                key.Binding
 	Quit               key.Binding
 }
 
 // Validate that keyBindings satisfies help.KeyMap interface.
+// TODO: refactor away from help bubbles for more control
 var _ help.KeyMap = (*keyBindings)(nil)
 
 // inputKeys contains the key binding & help text when input is focused.
@@ -40,7 +43,15 @@ var viewportKeys = keyBindings{
 	}),
 	Extract:     getExtractKeyBinding(false),
 	SwitchFocus: getSwitchFocusKeyBinding(util.Ptr("edit query")),
-	Quit:        getQuitKeyBinding(),
+	Compact: key.NewBinding(
+		key.WithKeys("c"),
+		key.WithHelp("c", "compact output"),
+	),
+	Raw: key.NewBinding(
+		key.WithKeys("r"),
+		key.WithHelp("r", "raw output"),
+	),
+	Quit: getQuitKeyBinding(),
 }
 
 // getViewportNavigationKeyBinding shows extra vim scrollable shortcuts.
@@ -99,9 +110,16 @@ func (k keyBindings) ShortHelp() []key.Binding {
 	return []key.Binding{k.ViewportNavigation, k.Extract, k.SwitchFocus, k.Quit}
 }
 
-// FullHelp returns keybindings for the expanded help view; not implemented.
+// FullHelp returns keybindings for the expanded help view, used when viewport focused.
 func (k keyBindings) FullHelp() [][]key.Binding {
-	return [][]key.Binding{k.ShortHelp()}
+	return [][]key.Binding{
+		{k.ViewportNavigation},
+		{k.Extract},
+		{k.SwitchFocus},
+		{k.Compact},
+		{k.Raw},
+		{k.Quit},
+	}
 }
 
 // handleKeyMsg is used by Update() when a KeyMsg is received.
@@ -128,9 +146,11 @@ func (m model) handleKeyMsg(msg tea.KeyMsg) (model, tea.Cmd) {
 		switch m.currentFocus {
 		case focusInput:
 			m.currentFocus = focusViewport
+			m.help.ShowAll = true
 			m.textinput.Cursor.Blink = true
 		case focusViewport:
 			m.currentFocus = focusInput
+			m.help.ShowAll = false
 			m.textinput.Cursor.Blink = false
 			cmd = textinput.Blink
 		}

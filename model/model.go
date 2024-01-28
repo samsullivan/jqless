@@ -56,6 +56,7 @@ func New(file *os.File) (*model, error) {
 
 	// configure help
 	m.help = help.New()
+	m.help.FullSeparator = m.help.ShortSeparator
 
 	// configure text input
 	m.textinput = textinput.New()
