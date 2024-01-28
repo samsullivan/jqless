@@ -105,7 +105,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// restart spinner in addition to triggering jq
 			cmds = append(cmds, m.spinner.Tick)
 			cmds = append(cmds, func() tea.Msg {
-				return jq.Query(m.data, query)
+				return jq.Query(m.data, query, &jq.Options{
+					Compact: m.compactOutput,
+					Raw:     m.rawOutput,
+				})
 			})
 		}
 	}

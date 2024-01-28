@@ -157,9 +157,11 @@ func (m model) handleKeyMsg(msg tea.KeyMsg) (model, tea.Cmd) {
 		}
 		return m, cmd
 	case key.Matches(msg, viewportKeys.Compact):
+		m.lastQuery = "" // trigger jq render
 		m.compactOutput = !m.compactOutput
 		return m, cmd
 	case key.Matches(msg, viewportKeys.Raw):
+		m.lastQuery = "" // trigger jq render
 		m.rawOutput = !m.rawOutput
 		return m, cmd
 	case key.Matches(msg, inputKeys.ViewportNavigation, viewportKeys.ViewportNavigation):
