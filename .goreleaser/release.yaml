@@ -12,7 +12,6 @@ changelog:
       - "^test:"
 
 release:
-  name_template: "{{.Tag}} {{.TagSubject}}"
   prerelease: auto
   extra_files:
     - glob: ./jqless-build/**/*
