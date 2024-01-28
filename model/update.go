@@ -80,13 +80,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	// handle viewport changes
-	m.viewport, cmd = m.viewport.Update(msg)
 	m.viewport.SetContent(m.viewportContents())
-	cmds = append(cmds, cmd)
+	if m.currentFocus == focusViewport {
+		m.viewport, cmd = m.viewport.Update(msg)
+		cmds = append(cmds, cmd)
+	}
 
 	// handle text input changes
-	m.textinput, cmd = m.textinput.Update(msg)
-	cmds = append(cmds, cmd)
+	if m.currentFocus == focusInput {
+		m.textinput, cmd = m.textinput.Update(msg)
+		cmds = append(cmds, cmd)
+	}
 
 	// skip jq-related processing if file not processed into data yet
 	if m.data == nil {

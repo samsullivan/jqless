@@ -16,8 +16,16 @@ import (
 	"github.com/samsullivan/jqless/message"
 )
 
+type Focus int
+
+const (
+	focusInput Focus = iota
+	focusViewport
+)
+
 type model struct {
 	viewportReady bool
+	currentFocus  Focus
 
 	// related to JSON user input
 	file *os.File
@@ -41,8 +49,9 @@ type model struct {
 // The file stream isn't consumed or unmarshalled into JSON yet.
 func New(file *os.File) (*model, error) {
 	m := model{
-		file:      file,
-		isLoading: true,
+		currentFocus: focusInput,
+		file:         file,
+		isLoading:    true,
 	}
 
 	// configure help
