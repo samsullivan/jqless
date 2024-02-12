@@ -7,7 +7,7 @@ require (
 	github.com/charmbracelet/bubbletea v0.25.0
 	github.com/charmbracelet/lipgloss v0.9.1
 	github.com/itchyny/gojq v0.12.14
-	github.com/urfave/cli/v3 v3.0.0-alpha8
+	github.com/urfave/cli/v3 v3.0.0-alpha9
 	golang.design/x/clipboard v0.7.0
 	golang.org/x/exp v0.0.0-20240112132812-db7319d0e0e3
 )
